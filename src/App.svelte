@@ -1,45 +1,113 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
+    import {
+        Canvas,
+        Mesh,
+        OrbitControls,
+        PerspectiveCamera,
+        HemisphereLight,
+        Group,
+    } from 'threlte';
+    import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
+    import beyonkSvg from './lib/beyonk.svg?raw';
+    import upperSvg from './lib/upper.svg?raw';
+    import lowerSvg from './lib/lower.svg?raw';
+    import { onMount } from 'svelte';
+    import * as THREE from 'three';
+
+    let geometry: THREE.ExtrudeGeometry;
+    let upperGeometry: THREE.ExtrudeGeometry;
+    let lowerGeometry: THREE.ExtrudeGeometry;
+
+    const geometryOptions = {
+        curveSegments: 64,
+        depth: 2,
+        bevelEnabled: true,
+        bevelOffset: 0,
+        bevelSegments: 64,
+        bevelSize: 1,
+        bevelThickness: 2,
+    };
+
+    onMount(() => {
+        const [upperShape] = new SVGLoader()
+            .parse(upperSvg)
+            .paths[0].toShapes(false);
+
+        upperGeometry = new THREE.ExtrudeGeometry(upperShape, geometryOptions);
+        upperGeometry.center();
+
+        const [lowerShape] = new SVGLoader()
+            .parse(lowerSvg)
+            .paths[0].toShapes(false);
+
+        lowerGeometry = new THREE.ExtrudeGeometry(lowerShape, geometryOptions);
+        lowerGeometry.center();
+
+        const paths = new SVGLoader().parse(beyonkSvg).paths[0].toShapes(true);
+
+        geometry = new THREE.ExtrudeGeometry(paths, geometryOptions);
+        geometry.center();
+    });
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer"> 
-      <img src="/vite.svg" class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer"> 
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
+<div>
+    <Canvas>
+        <PerspectiveCamera position={{ x: 0, y: 0, z: -200 }}>
+            <OrbitControls autoRotate enableDamping />
+        </PerspectiveCamera>
 
-  <div class="card">
-    <Counter />
-  </div>
+        <HemisphereLight
+            skyColor={0x4c8eac}
+            groundColor={0xac844c}
+            intensity={1} />
 
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
+        <Group position={{ x: 0, y: 25, z: 0 }}>
+            {#if upperGeometry}
+                <Mesh
+                    castShadow
+                    geometry={upperGeometry}
+                    position={{ x: 0, y: 0, z: 0 }}
+                    rotation={{ x: 0, y: 0, z: 0 }}
+                    material={new THREE.MeshStandardMaterial({
+                        color: new THREE.Color('#32B0A2'),
+                        side: THREE.DoubleSide,
+                    })} />
+            {/if}
 
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
+            {#if lowerGeometry}
+                <Mesh
+                    castShadow
+                    geometry={lowerGeometry}
+                    position={{ x: 0, y: 15, z: 0 }}
+                    rotation={{ x: 0, y: 0, z: 0 }}
+                    material={new THREE.MeshStandardMaterial({
+                        color: new THREE.Color('#32B0A2'),
+                        side: THREE.DoubleSide,
+                    })} />
+            {/if}
+        </Group>
+
+        {#if geometry}
+            <Mesh
+                castShadow
+                {geometry}
+                position={{ x: 0, y: 0, z: 0 }}
+                rotation={{ x: Math.PI, y: Math.PI, z: 0 }}
+                material={new THREE.MeshStandardMaterial({
+                    color: new THREE.Color('#32B0A2'),
+                    side: THREE.DoubleSide,
+                })} />
+        {/if}
+    </Canvas>
+</div>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
+    div {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #222;
+    }
 </style>
