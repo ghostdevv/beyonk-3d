@@ -43,9 +43,9 @@
         lowerGeometry = new THREE.ExtrudeGeometry(lowerShape, geometryOptions);
         lowerGeometry.center();
 
-        const paths = new SVGLoader().parse(beyonkSvg).paths[0].toShapes(true);
+        const shape = new SVGLoader().parse(beyonkSvg).paths[0].toShapes(true);
 
-        geometry = new THREE.ExtrudeGeometry(paths, geometryOptions);
+        geometry = new THREE.ExtrudeGeometry(shape, geometryOptions);
         geometry.center();
     });
 </script>
